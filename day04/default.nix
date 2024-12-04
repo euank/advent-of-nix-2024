@@ -35,7 +35,29 @@ let
     in foldl' builtins.add 0
     (flatten (arr2.imap (x: y: _: countXmasFrom x y) grid));
 
+  part2Answer = input:
+    let
+      grid = parseInput input;
+      countXmasFrom = x: y:
+        let el = arr2.get grid x y;
+        in if el != "A" then
+          0
+        else
+          let
+            upleft = arr2.getDef grid (x - 1) (y - 1) "";
+            upright = arr2.getDef grid (x + 1) (y - 1) "";
+            downleft = arr2.getDef grid (x - 1) (y + 1) "";
+            downright = arr2.getDef grid (x + 1) (y + 1) "";
+          in if (sort builtins.lessThan [ upleft upright downleft downright ])
+          == [ "M" "M" "S" "S" ] && upleft != downright && upright
+          != downleft then
+            1
+          else
+            0;
+    in foldl' builtins.add 0
+    (flatten (arr2.imap (x: y: _: countXmasFrom x y) grid));
+
 in {
   part1 = part1Answer input;
-  # part2 = part2Answer input;
+  part2 = part2Answer input;
 }
