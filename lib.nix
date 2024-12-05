@@ -8,6 +8,8 @@ let
 
     abs = num: if num < 0 then (-1) * num else num;
 
+    swap = arr: i: j: builtins.genList (idx: let idx' = if idx == i then j else if idx == j then i else idx; in builtins.elemAt arr idx') (builtins.length arr);
+
     arr2 = rec {
       width = arr: if (length arr) == 0 then 0 else length (elemAt arr 0);
       height = length;
