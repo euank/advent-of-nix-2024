@@ -1,5 +1,5 @@
 {
-  description = "Advent of code, 2023, solved with nix";
+  description = "Advent of code, 2024, solved with nix";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
@@ -12,8 +12,6 @@
     in {
       inherit lib nixpkgs;
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt;
-
-      check = import ./check.nix { inherit nixpkgs lib; };
     } // (nixpkgs.lib.mapAttrs
       (name: _: import ./${name} { inherit nixpkgs lib; }) dayDirs);
 }
