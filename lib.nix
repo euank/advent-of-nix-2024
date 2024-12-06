@@ -24,6 +24,8 @@ let
       imap = f: arr:
         genList (y: genList (x: f x y (get arr x y)) (length (head arr)))
         (length arr);
+
+      findAll = arr: f: remove null (flatten (imap (x: y: el: if f el then { inherit x y; } else null) arr));
     };
   };
 in lib
