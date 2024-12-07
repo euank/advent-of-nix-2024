@@ -1,9 +1,9 @@
 {
   description = "Advent of code, 2024, solved with nix";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  inputs = { nixpkgs = { url = "git+file:./.?submodules=1&dir=nixpkgs"; }; };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, ... }:
     let
       lib = import ./lib.nix { pkgs = nixpkgs; };
       dayDirs =
