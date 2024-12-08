@@ -1,10 +1,12 @@
 { pkgs }:
 with pkgs.lib;
 let
-  lib = rec {
+  lib = {
     splitStringWhitespace = s: flatten (builtins.filter builtins.isList (builtins.split "([^ ]+)" s));
 
     abs = num: if num < 0 then (-1) * num else num;
+
+    removeIdx = idx: arr: (sublist 0 idx arr) ++ (sublist (idx + 1) ((length arr) - 1) arr);
 
     swap =
       arr: i: j:
