@@ -32,11 +32,11 @@ let
 
   updateSeen =
     seen: guard: dir:
-    recursiveUpdate seen ({
+    recursiveUpdate seen {
       "${toKey guard}" = {
         "${toKey dir}" = true;
       };
-    });
+    };
 
   step =
     board: seen:
