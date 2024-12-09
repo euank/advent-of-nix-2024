@@ -2,20 +2,14 @@
   "nodes": {
     "nixpkgs": {
       "locked": {
-        "dir": "nixpkgs",
-        "dirtyRev": "14ab8939d5d7f29ad55c719b02c2611e83e5d471-dirty",
-        "dirtyShortRev": "14ab893-dirty",
-        "lastModified": 1733542165,
-        "narHash": "sha256-UougIvtzmkCrh/WCMGh6PzT0BIpndD+uGCcjsoa2dDA=",
-        "submodules": true,
-        "type": "git",
-        "url": "file:./."
+        "lastModified": 0,
+        "narHash": "sha256-D1FNZ70NmQEwNxpSSdTXCSklBH1z2isPR84J6DQrJGs=",
+        "path": "/nix/store/n1g84klfb0h3bpwyvc59lcy5ca58h36w-source",
+        "type": "path"
       },
       "original": {
-        "dir": "nixpkgs",
-        "submodules": true,
-        "type": "git",
-        "url": "file:./."
+        "id": "nixpkgs",
+        "type": "indirect"
       }
     },
     "root": {

@@ -1,12 +1,6 @@
 {
   description = "Advent of code, 2024, solved with nix";
 
-  inputs = {
-    nixpkgs = {
-      url = "git+file:./.?submodules=1&dir=nixpkgs";
-    };
-  };
-
   outputs =
     { self, nixpkgs, ... }:
     let
@@ -17,6 +11,7 @@
     in
     {
       inherit lib nixpkgs;
+      nixpkgs-src = "${nixpkgs}";
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
     }
     // (nixpkgs.lib.mapAttrs (name: _: import ./${name} { inherit nixpkgs lib; }) dayDirs);
