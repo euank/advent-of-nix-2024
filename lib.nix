@@ -42,6 +42,7 @@ let
         else
           elemAt (elemAt arr y) x;
 
+      map = f: arr: genList (y: genList (x: f (get arr x y)) (length (head arr))) (length arr);
       imap = f: arr: genList (y: genList (x: f x y (get arr x y)) (length (head arr))) (length arr);
 
       findAll =
