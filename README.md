@@ -37,3 +37,7 @@ Before running `./run-tvix.sh`, please run `git submodule init && git submodule 
 Part 2 takes an hour and 20GiB of memory to run on my machine.
 
 I know there's a more optimal solution, but you know, it's fine.
+
+#### Day 09
+
+Part 1 takes 3 minutes and 25GiB of memory.
