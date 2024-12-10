@@ -68,8 +68,29 @@ let
       acc + res
     ) 0 startPoints;
 
+  part2Answer =
+    input:
+    let
+      p = parseInput input;
+      startPoints = remove null (
+        flatten (
+          arr2.imap (
+            x: y: el:
+            if el == 0 then { inherit x y; } else null
+          ) p
+        )
+      );
+    in
+    foldl' (
+      acc: start:
+      let
+        res = length (numReachableFrom p start.x start.y (-20) (-20));
+      in
+      acc + res
+    ) 0 startPoints;
+
 in
 {
   part1 = part1Answer input;
-  # part2 = part2Answer input;
+  part2 = part2Answer input;
 }
