@@ -40,4 +40,4 @@ I know there's a more optimal solution, but you know, it's fine.
 
 #### Day 09
 
-Part 1 takes 3 minutes and 25GiB of memory.
+Both parts take around 12GiB of memory and 1.5 minutes.

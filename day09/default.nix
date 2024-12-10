@@ -6,13 +6,13 @@ let
 
   parseInput =
     input:
-    imap0 (id: c: {
-      id = id / 2;
+    imap0 (id': c: rec {
       l = toInt c;
-      free = (mod id 2) == 1;
+      free = (mod id' 2) == 1;
+      id = if free then "." else id' / 2;
     }) (stringToCharacters input);
 
-  toKey = chars: map (el: concatStrings (map toString (replicate el.l el.id))) chars;
+  toKey = chars: concatStrings (map (el: concatStrings (map toString (replicate el.l el.id))) chars);
 
   compactNoStackOverflow =
     chars:
@@ -20,7 +20,7 @@ let
       startSet = [
         {
           inherit chars;
-          key = toKey chars;
+          key = 0;
           ans = [ ];
         }
       ];
@@ -41,7 +41,7 @@ let
         else if l.free then
           [
             {
-              key = toKey chars';
+              key = item.key + 1;
               chars = chars';
               ans = item.ans;
             }
@@ -51,7 +51,7 @@ let
           [
             {
               ans = item.ans ++ [ h ];
-              key = toKey (tail chars);
+              key = item.key + 1;
               chars = tail chars;
             }
           ]
@@ -60,14 +60,14 @@ let
           [
             {
               ans = item.ans ++ [ l ];
-              key = toKey (tail chars');
+              key = item.key + 1;
               chars = tail chars';
             }
           ]
         # split
         else if l.l < h.l then
           [
-            rec {
+            {
               ans = item.ans ++ [ l ];
               chars = [
                 {
@@ -75,12 +75,12 @@ let
                   l = h.l - l.l;
                 }
               ] ++ (tail chars');
-              key = toKey chars;
+              key = item.key + 1;
             }
           ]
         else if l.l > h.l then
           [
-            rec {
+            {
               ans = item.ans ++ [
                 {
                   inherit (l) free id;
@@ -93,7 +93,7 @@ let
                   l = l.l - h.l;
                 }
               ];
-              key = toKey chars;
+              key = item.key + 1;
             }
           ]
         else
@@ -126,8 +126,110 @@ let
       res
     ).val;
 
+  compactNoStackOverflow2 =
+    chars:
+    builtins.genericClosure {
+      startSet = [
+        {
+          inherit chars;
+          ans = [ ];
+          key = 0;
+        }
+      ];
+      operator =
+        item:
+        let
+          chars = item.chars;
+          l = last chars;
+          fitsIdx = (lists.findFirstIndex (el: el.free && el.l >= l.l) null chars);
+          fitsEl = elemAt chars fitsIdx;
+        in
+        # done
+        if (length chars) == 0 then
+          [
+            item
+          ]
+        # free stuff should be at the end, we can ignore it
+        else if l.free then
+          [
+            {
+              ans = [ l ] ++ item.ans;
+              chars = init item.chars;
+              key = item.key + 1;
+            }
+          ]
+        # Can't fit anything don't move it
+        else if fitsIdx == null then
+          [
+            {
+              ans = [ l ] ++ item.ans;
+              chars = init item.chars;
+              key = item.key + 1;
+            }
+          ]
+        else if fitsEl.l == l.l then
+          [
+            {
+              ans = [ fitsEl ] ++ item.ans;
+              chars = setlist fitsIdx l (init item.chars);
+              key = item.key + 1;
+            }
+          ]
+        # split
+        else if fitsEl.l > l.l then
+          [
+            {
+              ans = [
+                {
+                  free = true;
+                  id = ".";
+                  l = l.l;
+                }
+              ] ++ item.ans;
+              chars = flatten (
+                setlist fitsIdx [
+                  l
+                  {
+                    free = true;
+                    id = ".";
+                    l = fitsEl.l - l.l;
+                  }
+                ] (init item.chars)
+              );
+              key = item.key + 1;
+            }
+          ]
+        # leave this blank in place
+        else
+          [
+            {
+              ans = [ l ] ++ item.ans;
+              chars = init item.chars;
+              key = item.key + 1;
+            }
+          ];
+    };
+
+  part2Answer =
+    input:
+    let
+      p = parseInput input;
+      res = (last (compactNoStackOverflow2 p)).ans;
+    in
+    (foldl'
+      (acc: el: {
+        val = acc.val + (if !el.free then sumEl acc.i el else 0);
+        i = acc.i + el.l;
+      })
+      {
+        i = 0;
+        val = 0;
+      }
+      res
+    ).val;
+
 in
 {
   part1 = part1Answer input;
-  # part2 = part2Answer input;
+  part2 = part2Answer input;
 }
