@@ -1,13 +1,17 @@
 { pkgs }:
 with pkgs.lib;
 let
-  lib = {
+  lib = rec {
     splitStringWhitespace = s: flatten (builtins.filter builtins.isList (builtins.split "([^ ]+)" s));
 
     abs = num: if num < 0 then (-1) * num else num;
 
     removeIdx = idx: arr: (sublist 0 idx arr) ++ (sublist (idx + 1) ((length arr) - 1) arr);
     setlist = n: val: arr: (sublist 0 n arr) ++ [ val ] ++ (sublist (n + 1) ((length arr) - 1) arr);
+
+    pow = x: n: if n == 1 then x else x * (pow x (n - 1));
+
+    force = x: builtins.deepSeq x x;
 
     swap =
       arr: i: j:

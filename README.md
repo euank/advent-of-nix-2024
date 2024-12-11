@@ -41,3 +41,9 @@ I know there's a more optimal solution, but you know, it's fine.
 #### Day 09
 
 Both parts take around 12GiB of memory and 1.5 minutes.
+
+#### Day 11
+
+~10 minutes, but not much memory!
+
+Thank gosh for `builtins.deepSeq` to avoid 60+ GiBs of thunks!
