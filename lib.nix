@@ -37,6 +37,8 @@ let
         arr: x: y:
         elemAt (elemAt arr y) x;
 
+      set = arr: x: y: val: imap (x': y': el: if x == x' && y == y' then val else el) arr;
+
       getDef =
         arr: x: y: def:
         if x < 0 || y < 0 then

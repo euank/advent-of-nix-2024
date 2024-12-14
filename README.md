@@ -47,3 +47,7 @@ Both parts take around 12GiB of memory and 1.5 minutes.
 ~10 minutes, but not much memory!
 
 Thank gosh for `builtins.deepSeq` to avoid 60+ GiBs of thunks!
+
+#### Day 12
+
+Part1 is 5 minutes, and the default linux stack limit is too low. Try `ulimit -s unlimited`
