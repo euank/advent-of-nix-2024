@@ -76,8 +76,39 @@ let
       p = parseInput input;
     in
     foldl' builtins.add 0 (remove null (map (solvePart 0 100) p));
+
+  updateInput =
+    p:
+    map (p: {
+      inherit (p) a b;
+      prize = {
+        x = p.prize.x + 10000000000000;
+        y = p.prize.y + 10000000000000;
+      };
+    }) p;
+
+  # Mathed it out on paper this time.
+  # In theory, we could have a divide-by-zero / degenerate case here, but my
+  # input was clean of any trouble.
+  solvePart2 =
+    p:
+    let
+      a = (p.prize.x * p.b.y - p.prize.y * p.b.x) / (p.a.x * p.b.y - p.a.y * p.b.x);
+      b = (p.prize.y * p.a.x - p.prize.x * p.a.y) / (p.a.x * p.b.y - p.a.y * p.b.x);
+    in
+    if (a * p.a.x + b * p.b.x) == p.prize.x && (a * p.a.y + b * p.b.y) == p.prize.y then
+      a * 3 + b
+    else
+      0;
+
+  part2Answer =
+    input:
+    let
+      p = updateInput (parseInput input);
+    in
+    foldl' builtins.add 0 (remove null (map solvePart2 p));
 in
 {
   part1 = part1Answer input;
-  #   part2 = part2Answer input;
+  part2 = part2Answer input;
 }
