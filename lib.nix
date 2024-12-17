@@ -6,6 +6,8 @@ let
 
     abs = num: if num < 0 then (-1) * num else num;
 
+    gcd = lhs: rhs: if lhs == 0 then rhs else gcd (trivial.mod rhs lhs) lhs;
+
     removeIdx = idx: arr: (sublist 0 idx arr) ++ (sublist (idx + 1) ((length arr) - 1) arr);
     setlist = n: val: arr: (sublist 0 n arr) ++ [ val ] ++ (sublist (n + 1) ((length arr) - 1) arr);
 
