@@ -53,6 +53,13 @@ let
       map = f: arr: genList (y: genList (x: f (get arr x y)) (length (head arr))) (length arr);
       imap = f: arr: genList (y: genList (x: f x y (get arr x y)) (length (head arr))) (length arr);
 
+      swap = arr: x: y: x': y':
+      let
+        el = get arr x y;
+        el' = get arr x' y';
+      in
+      imap (xx: yy: orig: if xx == x && yy == y then el' else if xx == x' && yy == y' then el else orig) arr;
+
       findAll =
         arr: f:
         remove null (
