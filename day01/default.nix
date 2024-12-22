@@ -5,7 +5,8 @@ let
   input = fileContents ./input;
 
   # input -> [[i j k] [x y z]]
-  parseInput = input:
+  parseInput =
+    input:
     let
       pairs = map (line: (map strings.toInt (splitStringWhitespace line))) (splitString "\n" input);
     in

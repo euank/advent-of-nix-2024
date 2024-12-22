@@ -9,7 +9,9 @@ let
     gcd = lhs: rhs: if lhs == 0 then rhs else gcd (trivial.mod rhs lhs) lhs;
 
     removeIdx = idx: arr: (sublist 0 idx arr) ++ (sublist (idx + 1) ((length arr) - 1) arr);
-    setlist = n: val: arr: (sublist 0 n arr) ++ [ val ] ++ (sublist (n + 1) ((length arr) - 1) arr);
+    setlist =
+      n: val: arr:
+      (sublist 0 n arr) ++ [ val ] ++ (sublist (n + 1) ((length arr) - 1) arr);
 
     pow = x: n: if n == 1 then x else x * (pow x (n - 1));
 
@@ -31,6 +33,9 @@ let
         builtins.elemAt arr idx'
       ) (builtins.length arr);
 
+    heap2 = import ./heap2.nix { inherit pkgs lib; };
+    heap = import ./heap.nix { inherit pkgs lib; };
+
     arr2 = rec {
       width = arr: if (length arr) == 0 then 0 else length (elemAt arr 0);
       height = length;
@@ -39,7 +44,12 @@ let
         arr: x: y:
         elemAt (elemAt arr y) x;
 
-      set = arr: x: y: val: imap (x': y': el: if x == x' && y == y' then val else el) arr;
+      set =
+        arr: x: y: val:
+        imap (
+          x': y': el:
+          if x == x' && y == y' then val else el
+        ) arr;
 
       getDef =
         arr: x: y: def:
@@ -53,12 +63,21 @@ let
       map = f: arr: genList (y: genList (x: f (get arr x y)) (length (head arr))) (length arr);
       imap = f: arr: genList (y: genList (x: f x y (get arr x y)) (length (head arr))) (length arr);
 
-      swap = arr: x: y: x': y':
-      let
-        el = get arr x y;
-        el' = get arr x' y';
-      in
-      imap (xx: yy: orig: if xx == x && yy == y then el' else if xx == x' && yy == y' then el else orig) arr;
+      swap =
+        arr: x: y: x': y':
+        let
+          el = get arr x y;
+          el' = get arr x' y';
+        in
+        imap (
+          xx: yy: orig:
+          if xx == x && yy == y then
+            el'
+          else if xx == x' && yy == y' then
+            el
+          else
+            orig
+        ) arr;
 
       findAll =
         arr: f:

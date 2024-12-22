@@ -48,7 +48,12 @@ let
     then
       seen
     # loop
-    else if hasAttrByPath [ (toKey board.guard) (toKey board.dir) ] seen then
+    else if
+      hasAttrByPath [
+        (toKey board.guard)
+        (toKey board.dir)
+      ] seen
+    then
       null
     else
       let
