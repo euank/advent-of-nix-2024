@@ -119,14 +119,105 @@ let
         else
         # every 20k items force the result, otherwise we oom.
         # if we force every item though we never complete
-          (if (trivial.mod heap'.size 20000) == 0 then force else trivial.id) (run (arr2.set visited next.x next.y (
-            imap0 (i: el: if i == dirInt then min el next.dist else el) visitedVal
-          )) heap' grid);
+        (if (trivial.mod heap'.size 20000) == 0 then force else trivial.id) (run (arr2.set visited next.x next.y (
+          imap0 (i: el: if i == dirInt then min el next.dist else el) visitedVal
+        )) heap' grid);
     in
     run visited toVisit grid;
 
+  # for part2, copy+paste and tweak
+  part2Answer =
+    input:
+    let
+      p = parseInput input;
+      grid = p.grid;
+      visited = arr2.map (_: [
+        null
+        null
+        null
+        null
+      ]) grid;
+      toVisit = lib.heap2.insert (lib.heap2.mkHeap (a: b: a.dist - b.dist)) (
+        p.start
+        // {
+          dist = 0;
+          dir = {
+            x = 1;
+            y = 0;
+          };
+          path = [ p.start ];
+        }
+      );
+
+      run =
+        visited: toVisit: grid:
+        let
+          pop = lib.heap2.pop toVisit;
+          heap = pop.heap;
+          next = pop.val;
+          nextNext = lib.heap2.min heap;
+          dirInt = dirToInt next.dir;
+          visitedVal = arr2.get visited next.x next.y;
+          visitedDir = elemAt visitedVal dirInt;
+          visitedScore = x: y: dir: elemAt (arr2.get visited x y) (dirToInt dir);
+          dirScores = [
+            {
+              score = 1;
+              dir = next.dir;
+            }
+            {
+              score = 1001;
+              dir = {
+                x = -1 * next.dir.y;
+                y = next.dir.x;
+              };
+            }
+            {
+              score = 1001;
+              dir = {
+                x = next.dir.y;
+                y = -1 * next.dir.x;
+              };
+            }
+          ];
+          heap' = (
+            foldl' (
+              acc: el:
+              let
+                x = next.x + el.dir.x;
+                y = next.y + el.dir.y;
+                dist = next.dist + el.score;
+                gridVal = arr2.get grid x y;
+                lastScore = visitedScore x y el.dir;
+              in
+              if gridVal != "#" && (lastScore == null || dist <= lastScore) then
+                lib.heap2.insert acc {
+                  inherit x y dist;
+                  dir = el.dir;
+                  path = next.path ++ [{inherit x y;}];
+                }
+              else
+                acc
+            ) heap dirScores
+          );
+        in
+        if toVisit.size == 0 then
+          []
+        else if next.x == p.end.x && next.y == p.end.y then
+          next.path ++ (if nextNext.dist == next.dist then run visited heap' grid else [])
+        else if visitedDir != null then
+          # recurse again with the updated heap, i.e. skip this item
+          run visited heap' grid
+        else
+        # every 20k items force the result, otherwise we oom.
+        # if we force every item though we never complete
+        (if (trivial.mod heap'.size 20000) == 0 then force else trivial.id) (run (arr2.set visited next.x next.y (
+          imap0 (i: el: if i == dirInt then min el next.dist else el) visitedVal
+        )) heap' grid);
+    in
+    length (unique (run visited toVisit grid));
 in
 {
   part1 = part1Answer input;
-  # part2 = part2Answer input;
+  part2 = part2Answer input;
 }
