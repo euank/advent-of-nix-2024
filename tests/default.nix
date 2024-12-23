@@ -18,7 +18,7 @@ let
   let
     items = map toInt (splitString "\n" (fileContents ./heaptest-01));
   in
-  assertHeap1Heap2Equal ( foldl' (h: el: lib.heap.insert h el) (lib.heap.mkHeap (l: r: l - r)) items) (foldl' (h: el: lib.heap2.insert h el) (lib.heap2.mkHeap (l: r: l - r)) items);
+  assertHeap1Heap2Equal ( foldl' (h: el: lib.heap.insert h el) (lib.heap.mkHeap (l: r: l - r)) items) (foldl' (h: el: (debug.traceValSeq (lib.heap2.insert h el))) (lib.heap2.mkHeap (l: r: l - r)) items);
 
 in
 {
