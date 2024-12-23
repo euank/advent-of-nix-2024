@@ -7,6 +7,14 @@ This is my go at Advent of Code (2024) in pure nix.
 In general, `nix eval '.#dayX'` (where 'X' is the number of the day, padded to
 length 2, such as `nix eval '.#day03'`) will display the answer to a given day.
 
+Note, many solutions require increasing the max call depth and increasing the stack size.
+For all solutions, consider running them as:
+
+```
+$ ulimit -s unlimited
+$ nix eval --option max-call-depth 4294967295 ...
+```
+
 ### Running solutions with tvix
 
 If for some reason you want to see how slow tvix is on something, you can do that too:
@@ -54,4 +62,4 @@ Part1 is 5 minutes, and the default linux stack limit is too low. Try `ulimit -s
 
 #### Day 16
 
-Does not currently complete on my computer. The implementation would be right if it completed I believe.
+Part 1 is ~5 minutes.

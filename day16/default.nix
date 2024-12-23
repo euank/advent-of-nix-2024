@@ -33,6 +33,9 @@ let
       inherit grid start end;
     };
 
+
+  min = l: r: if l == null then r else if r == null then l else trivial.min l r;
+
   dirToInt = dir: if dir.y == 0 then (dir.x + 1) / 2 else ((dir.y + 1) / 2) + 2;
 
   # Dijkstra's time
@@ -42,10 +45,10 @@ let
       p = parseInput input;
       grid = p.grid;
       visited = arr2.map (_: [
-        false
-        false
-        false
-        false
+        null
+        null
+        null
+        null
       ]) grid;
       toVisit = lib.heap2.insert (lib.heap2.mkHeap (a: b: a.dist - b.dist)) (
         p.start
@@ -61,12 +64,13 @@ let
       run =
         visited: toVisit: grid:
         let
-          pop = force (lib.heap2.pop toVisit);
+          pop = lib.heap2.pop toVisit;
           heap = pop.heap;
           next = pop.val;
           dirInt = dirToInt next.dir;
           visitedVal = arr2.get visited next.x next.y;
           visitedDir = elemAt visitedVal dirInt;
+          visitedScore = x: y: dir: elemAt (arr2.get visited x y) (dirToInt dir);
           dirScores = [
             {
               score = 1;
@@ -87,14 +91,19 @@ let
               };
             }
           ];
-          heap' = force (
+          heap' = (
             foldl' (
               acc: el:
-              if (arr2.get grid (next.x + el.dir.x) (next.y + el.dir.y)) != "#" then
+              let
+                x = next.x + el.dir.x;
+                y = next.y + el.dir.y;
+                dist = next.dist + el.score;
+                gridVal = arr2.get grid x y;
+                lastScore = visitedScore x y el.dir;
+              in
+              if gridVal != "#" && (lastScore == null || dist < lastScore) then
                 lib.heap2.insert acc {
-                  x = next.x + el.dir.x;
-                  y = next.y + el.dir.y;
-                  dist = next.dist + el.score;
+                  inherit x y dist;
                   dir = el.dir;
                 }
               else
@@ -104,13 +113,15 @@ let
         in
         if next.x == p.end.x && next.y == p.end.y then
           next.dist
-        else if visitedDir then
+        else if visitedDir != null then
           # recurse again with the updated heap, i.e. skip this item
           run visited heap' grid
         else
-          run (arr2.set visited next.x next.y (
-            imap0 (i: el: if i == dirInt then true else el) visitedVal
-          )) heap' grid;
+        # every 20k items force the result, otherwise we oom.
+        # if we force every item though we never complete
+          (if (trivial.mod heap'.size 20000) == 0 then force else trivial.id) (run (arr2.set visited next.x next.y (
+            imap0 (i: el: if i == dirInt then min el next.dist else el) visitedVal
+          )) heap' grid);
     in
     run visited toVisit grid;
 
