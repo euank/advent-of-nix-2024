@@ -78,7 +78,17 @@ let
             )
           # Otherwise, we're in the right place already
           else
-            node;
+            node
+            // (
+              if goRight then
+                {
+                  rhs = childNode;
+                }
+              else
+                {
+                  lhs = childNode;
+                }
+            );
         binaryDigits = tail (toBaseDigits 2 size);
       in
       f (map (d: d == 1) binaryDigits) node;
