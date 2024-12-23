@@ -13,6 +13,9 @@
       inherit lib nixpkgs;
       nixpkgs-src = "${nixpkgs}";
       formatter.x86_64-linux = nixpkgs.legacyPackages.x86_64-linux.nixfmt-rfc-style;
+
+      tests = import ./tests { inherit nixpkgs lib; };
+
     }
     // (nixpkgs.lib.mapAttrs (name: _: import ./${name} { inherit nixpkgs lib; }) dayDirs);
 }
