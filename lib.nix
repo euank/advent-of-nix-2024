@@ -13,7 +13,16 @@ let
       n: val: arr:
       (sublist 0 n arr) ++ [ val ] ++ (sublist (n + 1) ((length arr) - 1) arr);
 
-    pow = x: n: if n == 1 then x else x * (pow x (n - 1));
+    # https://en.wikipedia.org/wiki/Exponentiation_by_squaring#Recursive_version
+    # the naive recursive version was too slow for day 17
+    pow =
+      x: n:
+      if n == 0 then
+        1
+      else if (mod n 2) == 0 then
+        pow (x * x) (n / 2)
+      else
+        x * (pow (x * x) ((n - 1) / 2));
 
     force = x: builtins.deepSeq x x;
 

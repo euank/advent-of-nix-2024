@@ -33,8 +33,14 @@ let
       inherit grid start end;
     };
 
-
-  min = l: r: if l == null then r else if r == null then l else trivial.min l r;
+  min =
+    l: r:
+    if l == null then
+      r
+    else if r == null then
+      l
+    else
+      trivial.min l r;
 
   dirToInt = dir: if dir.y == 0 then (dir.x + 1) / 2 else ((dir.y + 1) / 2) + 2;
 
@@ -70,7 +76,9 @@ let
           dirInt = dirToInt next.dir;
           visitedVal = arr2.get visited next.x next.y;
           visitedDir = elemAt visitedVal dirInt;
-          visitedScore = x: y: dir: elemAt (arr2.get visited x y) (dirToInt dir);
+          visitedScore =
+            x: y: dir:
+            elemAt (arr2.get visited x y) (dirToInt dir);
           dirScores = [
             {
               score = 1;
@@ -117,11 +125,13 @@ let
           # recurse again with the updated heap, i.e. skip this item
           run visited heap' grid
         else
-        # every 20k items force the result, otherwise we oom.
-        # if we force every item though we never complete
-        (if (trivial.mod heap'.size 20000) == 0 then force else trivial.id) (run (arr2.set visited next.x next.y (
-          imap0 (i: el: if i == dirInt then min el next.dist else el) visitedVal
-        )) heap' grid);
+          # every 20k items force the result, otherwise we oom.
+          # if we force every item though we never complete
+          (if (trivial.mod heap'.size 20000) == 0 then force else trivial.id) (
+            run (arr2.set visited next.x next.y (
+              imap0 (i: el: if i == dirInt then min el next.dist else el) visitedVal
+            )) heap' grid
+          );
     in
     run visited toVisit grid;
 
@@ -159,7 +169,9 @@ let
           dirInt = dirToInt next.dir;
           visitedVal = arr2.get visited next.x next.y;
           visitedDir = elemAt visitedVal dirInt;
-          visitedScore = x: y: dir: elemAt (arr2.get visited x y) (dirToInt dir);
+          visitedScore =
+            x: y: dir:
+            elemAt (arr2.get visited x y) (dirToInt dir);
           dirScores = [
             {
               score = 1;
@@ -194,7 +206,7 @@ let
                 lib.heap2.insert acc {
                   inherit x y dist;
                   dir = el.dir;
-                  path = next.path ++ [{inherit x y;}];
+                  path = next.path ++ [ { inherit x y; } ];
                 }
               else
                 acc
@@ -202,18 +214,20 @@ let
           );
         in
         if toVisit.size == 0 then
-          []
+          [ ]
         else if next.x == p.end.x && next.y == p.end.y then
-          next.path ++ (if nextNext.dist == next.dist then run visited heap' grid else [])
+          next.path ++ (if nextNext.dist == next.dist then run visited heap' grid else [ ])
         else if visitedDir != null then
           # recurse again with the updated heap, i.e. skip this item
           run visited heap' grid
         else
-        # every 20k items force the result, otherwise we oom.
-        # if we force every item though we never complete
-        (if (trivial.mod heap'.size 20000) == 0 then force else trivial.id) (run (arr2.set visited next.x next.y (
-          imap0 (i: el: if i == dirInt then min el next.dist else el) visitedVal
-        )) heap' grid);
+          # every 20k items force the result, otherwise we oom.
+          # if we force every item though we never complete
+          (if (trivial.mod heap'.size 20000) == 0 then force else trivial.id) (
+            run (arr2.set visited next.x next.y (
+              imap0 (i: el: if i == dirInt then min el next.dist else el) visitedVal
+            )) heap' grid
+          );
     in
     length (unique (run visited toVisit grid));
 in
