@@ -25,6 +25,7 @@ let
         x * (pow (x * x) ((n - 1) / 2));
 
     force = x: builtins.deepSeq x x;
+    forceShallow = x: builtins.seq x x;
 
     swap =
       arr: i: j:

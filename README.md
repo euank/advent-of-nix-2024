@@ -63,3 +63,7 @@ Part1 is 5 minutes, and the default linux stack limit is too low. Try `ulimit -s
 #### Day 16
 
 Part 1 is ~5 minutes.
+
+### Day 18
+
+Part 1 took 37GiB of memory on my machine
