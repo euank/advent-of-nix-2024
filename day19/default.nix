@@ -21,27 +21,45 @@ let
 
   isPossible =
     memo: goal: parts:
-    if memo ? "${goal}" then
+    if goal == "" then
+      {
+        inherit memo;
+        val = 1;
+      }
+    else if memo ? "${goal}" then
       {
         inherit memo;
         val = memo."${goal}";
       }
     else
-      foldl'
-        (
-          state: part:
-          if state.val then
-            state
-          else if strings.hasPrefix part goal then
-            isPossible state.memo (removePrefix part goal) parts
-          else
-            state
-        )
-        {
-          inherit memo;
-          val = false;
-        }
-        (attrNames parts);
+      let
+        childAnswer =
+          foldl'
+            (
+              state: part:
+              if strings.hasPrefix part goal then
+                let
+                  s = isPossible state.memo (removePrefix part goal) parts;
+                in
+                {
+                  val = state.val + s.val;
+                  memo = s.memo;
+                }
+              else
+                state
+            )
+            {
+              inherit memo;
+              val = 0;
+            }
+            (attrNames parts);
+      in
+      rec {
+        val = childAnswer.val;
+        memo = childAnswer.memo // {
+          "${goal}" = val;
+        };
+      };
 
   part1Answer =
     input:
@@ -56,11 +74,34 @@ let
         in
         {
           memo = s.memo;
-          total = acc.total + (if s.val then 1 else 0);
+          total = acc.total + (if s.val > 0 then 1 else 0);
         }
       )
       {
-        memo = p.parts;
+        memo = { };
+        total = 0;
+      }
+      p.goals
+    ).total;
+
+  part2Answer =
+    input:
+    let
+      p = parseInput input;
+    in
+    (foldl'
+      (
+        acc: el:
+        let
+          s = isPossible acc.memo el p.parts;
+        in
+        {
+          memo = s.memo;
+          total = acc.total + s.val;
+        }
+      )
+      {
+        memo = { };
         total = 0;
       }
       p.goals
@@ -68,5 +109,5 @@ let
 in
 {
   part1 = part1Answer input;
-  # part2 = part2Answer input;
+  part2 = part2Answer input;
 }
