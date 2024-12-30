@@ -67,3 +67,7 @@ Part 1 is ~5 minutes.
 ### Day 18
 
 Part 1 took 37GiB of memory on my machine
+
+### Day 20
+
+Both parts take ~7.5 minutes (with 20GiB of memory usage).

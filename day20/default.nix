@@ -95,67 +95,45 @@ let
     else
       run (i + 1) (forceShallow (arr2.set visited next.x next.y next.dist)) (forceShallow heap') grid end;
 
-  dirs = [
-    {
-      x = 1;
-      y = 0;
-    }
-    {
-      x = -1;
-      y = 0;
-    }
-    {
-      x = 0;
-      y = 1;
-    }
-    {
-      x = 0;
-      y = -1;
-    }
-  ];
+  ptDist = l: r: (abs (l.x - r.x)) + (abs (l.y - r.y));
 
   countImprovementsGreaterThan =
-    grid: dist: n:
-    foldl' builtins.add 0 (
-      flatten (
-        arr2.imap (
-          x: y: el:
-          if el == null then
-            0
-          else
-            # try each direction
-            foldl' builtins.add 0 (
-              map (
-                dir:
-                let
-                  isBlocked = arr2.getDef grid (x + dir.x) (y + dir.y) false;
-                  el'' = arr2.getDef dist (x + dir.x * 2) (y + dir.y * 2) null;
-                in
-                if isBlocked && el'' != null && (el'' - el) > n then 1 else 0
-              ) dirs
-            )
-        ) dist
-      )
-    );
-
-  solvePart1 =
-    p:
+    dist: n: radius:
     let
-      toVisit = lib.heap2.insert (lib.heap2.mkHeap (a: b: a.fdist - b.fdist)) {
+      points = remove null (
+        flatten (
+          arr2.imap (
+            x: y: dist:
+            if dist == null then null else { inherit x y dist; }
+          ) dist
+        )
+      );
+      products = filter (el: el.l != el.r) (cartesianProduct {
+        l = points;
+        r = points;
+      });
+      withinRadius = filter (el: (ptDist el.l el.r) <= radius) products;
+      greaterThan = filter (el: ((el.l.dist - el.r.dist) - (ptDist el.l el.r)) >= n) withinRadius;
+    in
+    length greaterThan;
+
+  solve =
+    p: radius:
+    let
+      toVisit = lib.heap2.insert (lib.heap2.mkHeap (a: b: a.dist - b.dist)) {
         x = p.start.x;
         y = p.start.y;
         dist = 0;
-        fdist = (abs (p.start.x - p.end.x)) + (abs (p.start.y - p.end.y));
       };
-      visited = arr2.map (_: null) p.grid;
+      visited = arr2.set (arr2.map (_: null) p.grid) p.start.x p.start.y 0;
       res = run 0 visited toVisit p.grid p.end;
     in
-    countImprovementsGreaterThan p.grid res 100;
+    countImprovementsGreaterThan res 100 radius;
 
-  part1Answer = input: solvePart1 (parseInput input);
-
+  part1Answer = input: solve (parseInput input) 2;
+  part2Answer = input: solve (parseInput input) 20;
 in
 {
   part1 = part1Answer input;
-  # part2 = part2Answer input;
+  part2 = part2Answer input;
 }
