@@ -15,6 +15,8 @@ let
       n: val: arr:
       (sublist 0 n arr) ++ [ val ] ++ (sublist (n + 1) ((length arr) - 1) arr);
 
+    removeAll = xs: arr: foldl' (arr: x: remove x arr) arr xs;
+
     fromBinary = str: fromBinaryBits (map toInt (stringToCharacters str));
     fromBinaryBits = bits: foldl' (acc: n: acc * 2 + n) 0 bits;
 
