@@ -15,6 +15,9 @@ let
       n: val: arr:
       (sublist 0 n arr) ++ [ val ] ++ (sublist (n + 1) ((length arr) - 1) arr);
 
+    fromBinary = str: fromBinaryBits (map toInt (stringToCharacters str));
+    fromBinaryBits = bits: foldl' (acc: n: acc * 2 + n) 0 bits;
+
     # https://en.wikipedia.org/wiki/Exponentiation_by_squaring#Recursive_version
     # the naive recursive version was too slow for day 17
     pow =
