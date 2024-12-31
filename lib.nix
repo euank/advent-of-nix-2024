@@ -8,6 +8,8 @@ let
 
     gcd = lhs: rhs: if lhs == 0 then rhs else gcd (trivial.mod rhs lhs) lhs;
 
+    elemAtDef = arr: i: def: if i < 0 || i >= (length arr) then def else elemAt arr i;
+
     removeIdx = idx: arr: (sublist 0 idx arr) ++ (sublist (idx + 1) ((length arr) - 1) arr);
     setlist =
       n: val: arr:
