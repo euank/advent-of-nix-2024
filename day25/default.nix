@@ -51,5 +51,4 @@ let
 in
 {
   part1 = part1Answer input;
-  # part2 = part2Answer input;
 }
