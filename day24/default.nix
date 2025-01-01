@@ -260,6 +260,17 @@ let
         r = carryBit z;
       };
 
+  isEqual =
+    l: r:
+    if isString l && isString r then
+      l == r
+    else if isString l then
+      false
+    else if isString r then
+      false
+    else
+      l.op == r.op && (isEqual l.l r.l) && (isEqual l.r r.r);
+
   # findCorrect finds a single instruction that expands to the same "expected"
   # output we want right now, and returns it.
   # This tells us what to swap with.
