@@ -22,6 +22,10 @@ like such, so some solutions may OOM if both parts are run together.
 I'm also running this on a machine with 64GiB of memory, so solutions may take
 up to that amount of memory.
 
+I also have `experimental-features = ca-derivations dynamic-derivations flakes
+nix-command recursive-nix` set in my `nix show-config`, though I think only
+`flakes nix-command` are used in practice in this repo.
+
 ### Running solutions with tvix
 
 If for some reason you want to see how slow tvix is on something, you can do that too:
@@ -40,10 +44,10 @@ max memory:                2139 MB
 
 In general tvix seems to be significantly slower, but it's interesting to compare!
 
-In order to be able to use `tvix`, which doesn't support `fetchGit` yet, the `nixpkgs` repo has been included as a submodule.
+Since `tvix` doesn't support `fetchGit` yet, `run-tvix` will populate a
+'nixpkgs' symlink in the repository to use automatically.
 
-Before running `./run-tvix.sh`, please run `git submodule init && git submodule update`
-
+This is done using `nix`, so you need nix installed as well.
 
 ### Day specific notes
 
