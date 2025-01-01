@@ -100,15 +100,6 @@ let
     in
     fromBinaryBits (binaryDigits p zs);
 
-  lastWrongIdx =
-    l: r: zs:
-    if (length l) == 0 then
-      -1
-    else if (last l) != (last r) then
-      ((length l) - 1)
-    else
-      lastWrongIdx (init l) (init r);
-
   doSwap =
     swap: state:
     state
@@ -118,80 +109,6 @@ let
         "${swap.r}" = state.instrs."${swap.l}";
       };
     };
-
-  trySwap =
-    swaps: p: zs: tgt:
-    let
-      actual = binaryDigits p zs;
-      wrongIdx = lastWrongIdx tgt actual;
-      possibleSwaps = filter (s: s.l != s.r) (cartesianProduct {
-        l = attrNames p.instrs;
-        r = attrNames p.instrs;
-      });
-    in
-    if (length swaps) > 4 then
-      null
-    else if wrongIdx == -1 then
-      swaps
-    else
-      let
-        possibleNextSwaps = foldl' (
-          acc: swap:
-          let
-            p' = doSwap swap p;
-            widx = debug.traceValSeq (lastWrongIdx tgt (binaryDigits p' zs));
-          in
-          if widx <= wrongIdx then acc ++ [ swap ] else acc
-        ) [ ] possibleSwaps;
-      in
-      foldl' (
-        acc: swap: if acc != null then acc else trySwap (swaps ++ [ swap ]) (doSwap swap p) zs tgt
-      ) null possibleNextSwaps;
-
-  showFormula =
-    state: val:
-    if state.vals ? "${val}" then
-      {
-        inherit state;
-        val = val;
-      }
-    else
-      let
-        instr = state.instrs."${val}";
-        lhs = showFormula state instr.l;
-        rhs = showFormula lhs.state instr.r;
-        state' = rhs.state;
-        lr = elemAt (naturalSort [
-          lhs.val
-          rhs.val
-        ]);
-        val' = "(${lr 0} ${instr.opStr} ${lr 1})";
-      in
-      {
-        state = state' // {
-          "${val}" = val';
-        };
-        val = val';
-      };
-
-  allInstructionsFor =
-    state: val:
-    if state.vals ? "${val}" then
-      [ ]
-    else
-      let
-        instr = state.instrs."${val}";
-      in
-      [
-        {
-          l = instr.l;
-          r = instr.r;
-          op = instr.opStr;
-          out = val;
-        }
-      ]
-      ++ (allInstructionsFor state instr.l)
-      ++ (allInstructionsFor state instr.r);
 
   pad2 = i: if i < 10 then "0${toString i}" else toString i;
 
@@ -227,27 +144,8 @@ let
     else
       (if !(checkBit p zs bit) then [ bit ] else [ ]) ++ (findWrongBits (bit + 1) p zs);
 
-  findOutputDeps =
-    depth: state: val:
-    if depth == 0 then
-      {
-        val = [ ];
-      }
-    else if state.vals ? "${val}" then
-      {
-        val = [ ];
-      }
-    else
-      let
-        instr = state.instrs."${val}";
-        lhs = findOutputDeps (depth - 1) state instr.l;
-        rhs = findOutputDeps (depth - 1) state instr.r;
-        val' = [ val ] ++ lhs.val ++ rhs.val;
-      in
-      {
-        val = val';
-      };
-
+  # give us a way to sort left/right nodes in a tree of instructions
+  # this is done hackily, but whatever.
   subtreeSum =
     node:
     if isString node then
@@ -311,6 +209,7 @@ let
         orig = val;
       };
 
+  # equation for a carry bit in a ripple-carry adder
   carryBit =
     z:
     if z == 0 then
@@ -340,9 +239,8 @@ let
         };
       };
 
-  # "exp=x01, actual={\"l\":\"x00\",\"op\":\"AND\",\"orig\":\"rdm\",\"r\":\"y00\"}",
-  # "exp=y01, actual={\"l\":\"x01\",\"op\":\"XOR\",\"orig\":\"bck\",\"r\":\"y01\"}",
-
+  # ripple-carry adder for an output bit, since that's what this is simulation,
+  # we can make our own and then compare.
   expectedOperationsForBit =
     z:
     if z == 0 then
@@ -362,28 +260,9 @@ let
         r = carryBit z;
       };
 
-  wrongInstructionsForOutput = state: z: null;
-
-  # So this is a ripple carry adder, we can find what's wrong by basically
-  # creating the expected output and diffing.
-  solvePart2 =
-    p:
-    let
-      zs = builtins.genList trivial.id 44;
-    in
-    foldl' (acc: z: acc ++ (wrongInstructionsForOutput p z)) [ ] zs;
-
-  isEqual =
-    l: r:
-    if isString l && isString r then
-      l == r
-    else if isString l then
-      false
-    else if isString r then
-      false
-    else
-      l.op == r.op && (isEqual l.l r.l) && (isEqual l.r r.r);
-
+  # findCorrect finds a single instruction that expands to the same "expected"
+  # output we want right now, and returns it.
+  # This tells us what to swap with.
   findCorrect =
     instrs: exp:
     let
@@ -391,8 +270,14 @@ let
     in
     if isString instr then instr else instr.orig;
 
+  # So this is a ripple carry adder, we can find what's wrong by basically
+  # creating the expected output and diffing.
+  # this function diffs the expected ripple-carry-adder I generated with the
+  # actual input's one.
   findFirstMistake =
     instrs: exp: actual:
+    # Ignore these first three types of mistakes, they don't show up in my
+    # input thankfully.
     if (isString exp) && (isString actual) then
       null
     else if isString exp then
@@ -415,32 +300,6 @@ let
     let
       p = parseInput input;
       zs = filter (strings.hasPrefix "z") (attrNames p.instrs);
-
-      # manually derived from looking at the 'printMistakes' output without this.
-      swaps' = [
-        # First print mistakes output:
-        # "exp.op=XOR, actual=OR; z06 (correct=fhc)"
-        {
-          l = "z06";
-          r = "fhc";
-        }
-        # after fixing that:
-        # exp.op=XOR, actual=AND; z11 (correct=qhj)"
-        {
-          l = "z11";
-          r = "qhj";
-        }
-        # "exp.op=XOR, actual=AND; ggt (correct=mwh)"
-        {
-          l = "ggt";
-          r = "mwh";
-        }
-        # "exp.op=XOR, actual=AND; z35 (correct=hqk)"
-        {
-          l = "z35";
-          r = "hqk";
-        }
-      ];
 
       # we know there's 4 swaps, the problem told us so, so try that.
       # assume that swapping to fix the lowest bit will always be good enough,
@@ -482,12 +341,6 @@ let
         )
       );
 in
-# solvePart2 {} [] p;
-# removeAll goodInstrSet badInstrSet;
-# goodBits;
-# concatStringsSep "\n" computeZPath.val;
-# findOutputDeps 3 p "z${pad2 w}";
-# in correctWrongBit w p zs;;
 {
   part1 = part1Answer input;
   part2 = part2Answer input;
