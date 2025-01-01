@@ -1,4 +1,4 @@
-## Advent of Nix 2023
+## Advent of Nix 2024
 
 This is my go at Advent of Code (2024) in pure nix.
 
