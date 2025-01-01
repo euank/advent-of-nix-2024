@@ -15,6 +15,13 @@ $ ulimit -s unlimited
 $ nix eval --option max-call-depth 4294967295 ...
 ```
 
+You also likely want to run parts one at a time, such as `nix eval
+'.#day01.part2'` in order to reduce total resource usage; I only ever run them
+like such, so some solutions may OOM if both parts are run together.
+
+I'm also running this on a machine with 64GiB of memory, so solutions may take
+up to that amount of memory.
+
 ### Running solutions with tvix
 
 If for some reason you want to see how slow tvix is on something, you can do that too:
