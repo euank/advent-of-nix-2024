@@ -76,7 +76,7 @@ let
         ).seq
       ) p;
     in
-    findBest seqs;
+    (findBest seqs).value;
 
 in
 {

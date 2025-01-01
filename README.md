@@ -69,7 +69,7 @@ Thank gosh for `builtins.deepSeq` to avoid 60+ GiBs of thunks!
 
 #### Day 12
 
-Part1 is 5 minutes, and the default linux stack limit is too low. Try `ulimit -s unlimited`
+Part1 is 5 minutes.
 
 #### Day 16
 
