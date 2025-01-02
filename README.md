@@ -49,6 +49,25 @@ Since `tvix` doesn't support `fetchGit` yet, `run-tvix` will populate a
 
 This is done using `nix`, so you need nix installed as well.
 
+### Runtime of all solutions
+
+On my machine, running all solutions serially takes about 2 hours:
+
+```
+$ time nix run --option max-call-depth 4294967295 '.#check.all'
+
+6537.53s  user 55.99s system 99% cpu 1:50:16.46 total
+max memory:                40045 MB
+```
+
+This is on a decently fast desktop cpu (Ryzen 7 7700X), so YMMV.
+
+I'll update these numbers if I ever bother to make them much faster, but it's
+all dominated by running reasonably efficient graph algorithms (dijkstra's)
+just being really slow in nix, so I feel like I'd need a breakthrough on how to
+implemnet Dijkstra's in a way that doesn't tank nix's performance in order to
+get the runtime under an hour.
+
 ### Day specific notes
 
 #### Day 06
