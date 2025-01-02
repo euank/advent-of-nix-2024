@@ -70,7 +70,7 @@ let
       run =
         visited: toVisit: grid:
         let
-          pop = lib.heap2.pop toVisit;
+          pop = forceShallow (lib.heap2.pop toVisit);
           heap = pop.heap;
           next = pop.val;
           dirInt = dirToInt next.dir;
@@ -110,10 +110,12 @@ let
                 lastScore = visitedScore x y el.dir;
               in
               if gridVal != "#" && (lastScore == null || dist < lastScore) then
-                lib.heap2.insert acc {
-                  inherit x y dist;
-                  dir = el.dir;
-                }
+                forceShallow (
+                  lib.heap2.insert acc {
+                    inherit x y dist;
+                    dir = el.dir;
+                  }
+                )
               else
                 acc
             ) heap dirScores
@@ -125,13 +127,11 @@ let
           # recurse again with the updated heap, i.e. skip this item
           run visited heap' grid
         else
-          # every 20k items force the result, otherwise we oom.
-          # if we force every item though we never complete
-          (if (trivial.mod heap'.size 20000) == 0 then force else trivial.id) (
-            run (arr2.set visited next.x next.y (
+          run (force (
+            arr2.set visited next.x next.y (
               imap0 (i: el: if i == dirInt then min el next.dist else el) visitedVal
-            )) heap' grid
-          );
+            )
+          )) heap' grid;
     in
     run visited toVisit grid;
 
@@ -162,12 +162,12 @@ let
       run =
         visited: toVisit: grid:
         let
-          pop = lib.heap2.pop toVisit;
+          pop = forceShallow (lib.heap2.pop toVisit);
           heap = pop.heap;
           next = pop.val;
           nextNext = lib.heap2.min heap;
           dirInt = dirToInt next.dir;
-          visitedVal = arr2.get visited next.x next.y;
+          visitedVal = forceShallow (arr2.get visited next.x next.y);
           visitedDir = elemAt visitedVal dirInt;
           visitedScore =
             x: y: dir:
@@ -203,11 +203,13 @@ let
                 lastScore = visitedScore x y el.dir;
               in
               if gridVal != "#" && (lastScore == null || dist <= lastScore) then
-                lib.heap2.insert acc {
-                  inherit x y dist;
-                  dir = el.dir;
-                  path = next.path ++ [ { inherit x y; } ];
-                }
+                forceShallow (
+                  lib.heap2.insert acc {
+                    inherit x y dist;
+                    dir = el.dir;
+                    path = next.path ++ [ { inherit x y; } ];
+                  }
+                )
               else
                 acc
             ) heap dirScores
@@ -216,18 +218,16 @@ let
         if toVisit.size == 0 then
           [ ]
         else if next.x == p.end.x && next.y == p.end.y then
-          next.path ++ (if nextNext.dist == next.dist then run visited heap' grid else [ ])
+          next.path ++ (if nextNext.dist == next.dist then forceShallow (run visited heap' grid) else [ ])
         else if visitedDir != null then
           # recurse again with the updated heap, i.e. skip this item
-          run visited heap' grid
+          forceShallow (run visited heap' grid)
         else
-          # every 20k items force the result, otherwise we oom.
-          # if we force every item though we never complete
-          (if (trivial.mod heap'.size 20000) == 0 then force else trivial.id) (
-            run (arr2.set visited next.x next.y (
+          run (force (
+            arr2.set visited next.x next.y (
               imap0 (i: el: if i == dirInt then min el next.dist else el) visitedVal
-            )) heap' grid
-          );
+            )
+          )) heap' grid;
     in
     length (unique (run visited toVisit grid));
 in
